@@ -9127,7 +9127,10 @@ struct my_option my_long_options[] = {
      "server if required; FORCE to force upgrade server.",
      &opt_upgrade_mode, &opt_upgrade_mode, &upgrade_mode_typelib, GET_ENUM,
      REQUIRED_ARG, UPGRADE_AUTO, 0, 0, nullptr, 0, nullptr},
-
+    {"debug-trace-sw", 0,
+     "switch on/off for sesstion debug trace",
+     &global_system_variables.debug_trace_sw, &global_system_variables.debug_trace_sw,
+     nullptr, GET_BOOL,OPT_ARG, 0, 0, 0, nullptr, 0, nullptr},
     {nullptr, 0, nullptr, nullptr, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0,
      0, nullptr, 0, nullptr}};
 
@@ -10869,7 +10872,6 @@ static int get_options(int *argc_ptr, char ***argv_ptr) {
   if (!is_help_or_validate_option() &&
       !global_system_variables.explicit_defaults_for_timestamp)
     LogErr(WARNING_LEVEL, ER_DEPRECATED_TIMESTAMP_IMPLICIT_DEFAULTS);
-
   opt_init_connect.length = strlen(opt_init_connect.str);
   opt_init_replica.length = strlen(opt_init_replica.str);
   opt_mandatory_roles.length = strlen(opt_mandatory_roles.str);

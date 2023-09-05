@@ -21,9 +21,30 @@
    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
 #include "sql/current_thd.h"
-
+#include "sql/sql_class.h"
 thread_local THD *current_thd = nullptr;
 
+
+int get_current_thread_id()
+{
+  return ((int) current_thd->thread_id());
+}
+int get_stack_level()
+{
+  return current_thd->get_stack_level();
+}
+void stack_level_incr()
+{
+  current_thd->stack_level_incr();
+}
+void stack_level_decr()
+{
+  current_thd->stack_level_decr();
+}
+bool get_debug_trace_status()
+{
+  return current_thd->variables.debug_trace_sw;
+}
 #if defined(_WIN32)
 extern "C" THD *_current_thd_noinline(void) { return current_thd; }
 #endif

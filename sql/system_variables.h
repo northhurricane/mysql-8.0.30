@@ -462,12 +462,13 @@ struct System_variables {
     specific connections, so they don't make sense if XA transaction is
     committed or rolled back from another connection.
    */
-  bool xa_detach_on_prepare;
+ bool xa_detach_on_prepare;
 
   /**
     @sa Sys_debug_sensitive_session_string
   */
   char *debug_sensitive_session_str;
+  bool debug_trace_sw;
 };
 
 /**

@@ -4654,6 +4654,23 @@ class THD : public MDL_context_owner,
              get_stmt_da()->mysql_errno() == ER_DA_CONN_LIMIT));
   }
 #endif
+public:
+  int  get_stack_level()
+  {
+    return m_stack_level;
+  }
+  void stack_level_incr()
+  {
+    ++m_stack_level;
+  }
+  void stack_level_decr()
+  {
+    if (m_stack_level == 0)
+      return;
+    --m_stack_level;
+  }
+private:
+  int m_stack_level;
 };
 
 /**

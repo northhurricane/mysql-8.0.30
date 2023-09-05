@@ -1238,6 +1238,7 @@ bool do_command(THD *thd) {
   enum enum_server_command command = COM_SLEEP;
   COM_DATA com_data;
   DBUG_TRACE;
+  DBUG_ENTER2; 
   assert(thd->is_classic_protocol());
 
   /*
@@ -1367,6 +1368,7 @@ out:
   /* The statement instrumentation must be closed in all cases. */
   assert(thd->m_digest == nullptr);
   assert(thd->m_statement_psi == nullptr);
+  DBUG_EXIT2;
   return return_value;
 }
 
@@ -1620,6 +1622,7 @@ bool dispatch_command(THD *thd, const COM_DATA *com_data,
   bool error = false;
   Global_THD_manager *thd_manager = Global_THD_manager::get_instance();
   DBUG_TRACE;
+  DBUG_ENTER2; 
   DBUG_PRINT("info", ("command: %d", command));
 
   Sql_cmd_clone *clone_cmd = nullptr;
@@ -2419,7 +2422,7 @@ done:
 #if defined(ENABLED_PROFILING)
   thd->profiling->finish_current_query();
 #endif
-
+  DBUG_EXIT2;
   return error;
 }
 
@@ -5110,6 +5113,7 @@ void THD::reset_for_next_command() {
 
 void dispatch_sql_command(THD *thd, Parser_state *parser_state) {
   DBUG_TRACE;
+  DBUG_ENTER2;
   DBUG_PRINT("dispatch_sql_command", ("query: '%s'", thd->query().str));
 
   DBUG_EXECUTE_IF("parser_debug", turn_parser_debug_on(););
@@ -5284,6 +5288,7 @@ void dispatch_sql_command(THD *thd, Parser_state *parser_state) {
   thd->lex->destroy();
   thd->end_statement();
   thd->cleanup_after_query();
+  DBUG_EXIT2;
   assert(thd->change_list.is_empty());
 
   DEBUG_SYNC(thd, "query_rewritten");

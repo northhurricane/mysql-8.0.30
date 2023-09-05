@@ -24,6 +24,11 @@
 #define CURRENT_THD_INCLUDED
 
 class THD;
+int get_current_thread_id();
+int get_stack_level();
+void stack_level_incr();
+void stack_level_decr();
+bool get_debug_trace_status();
 
 #if defined(MYSQL_DYNAMIC_PLUGIN) && defined(_WIN32)
 extern "C" THD *_current_thd_noinline();

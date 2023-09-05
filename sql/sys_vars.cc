@@ -5519,6 +5519,16 @@ static Sys_var_bool Sys_log_binlog(
     NOT_IN_BINLOG, ON_CHECK(check_sql_log_bin),
     ON_UPDATE(fix_sql_log_bin_after_update));
 
+
+
+
+static Sys_var_bool Sys_debug_trace_sw("debug_trace_sw",
+                                         " switch on/off the debug trace",
+                                         SESSION_VAR(debug_trace_sw),
+                                         CMD_LINE(OPT_ARG),DEFAULT(false),
+                                         NO_MUTEX_GUARD,NOT_IN_BINLOG,ON_CHECK(0),
+                                         ON_UPDATE(0));
+
 static Sys_var_bit Sys_transaction_allow_batching(
     "transaction_allow_batching", "transaction_allow_batching",
     SESSION_ONLY(option_bits), NO_CMD_LINE, OPTION_ALLOW_BATCH, DEFAULT(false));

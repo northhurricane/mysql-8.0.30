@@ -35,6 +35,7 @@
 #include "my_compiler.h"
 
 #include <string.h>
+#include "sql/current_thd.h"
 
 #if !defined(NDEBUG)
 #include <assert.h>  // IWYU pragma: keep
@@ -62,8 +63,6 @@ struct _db_stack_frame_ {
   unsigned int level; /* this nesting level, highest bit enables tracing */
   struct _db_stack_frame_ *prev; /* pointer to the previous frame */
 };
-
-struct CODE_STATE;
 
 extern int _db_keyword_(struct CODE_STATE *, const char *, int);
 extern int _db_explain_(struct CODE_STATE *cs, char *buf, size_t len);
@@ -142,6 +141,49 @@ class AutoDebugTrace {
   _db_stack_frame_ m_stack_frame;
 };
 
+class AutoDebugTrace2 {
+ public:
+AutoDebugTrace2(const char *function, const char *filename, int line, int type):m_type(type) {
+    // Remove the return type, if it's there.
+    const char *begin = strchr(function, ' ');
+    if (begin != nullptr) {
+      function = begin + 1;
+    }
+    char outstr[1024] = {0};
+    memset(outstr, ' ', 1023);
+    char ident[200] = {0};
+    int thread_id = get_current_thread_id();
+    if (m_type ==0)
+      stack_level_incr();
+    int stack_level = get_stack_level();
+    // type = 0 means enter function
+    // type =1 means exit function
+    //    sprintf(outstr, "%d    ", thread_id);
+    memset(ident, ' ', stack_level);
+    if (m_type == 0)
+    {
+      sprintf(outstr ,"%d, %s  | > %s    %s:%d\n",thread_id, ident, function , filename, line );
+      }
+    else
+    {
+      sprintf(outstr ,"%d, %s  | < %s    %s:%d\n",thread_id, ident, function , filename, line );
+    }
+    // Cut it off at the first parenthesis; the argument list is
+    // often too long to be interesting.
+    if (get_debug_trace_status() == true)
+    {
+      fprintf(stderr, "%s",  outstr);
+    }
+  }
+
+  ~AutoDebugTrace2() 
+  { if (m_type == 1)
+      stack_level_decr();
+  }
+private:
+  int m_type;
+};
+
 #define DBUG_TRACE \
   AutoDebugTrace _db_trace(DBUG_PRETTY_FUNCTION, __FILE__, __LINE__)
 
@@ -150,6 +192,12 @@ class AutoDebugTrace {
 #define DBUG_ENTER(a)                       \
   struct _db_stack_frame_ _db_stack_frame_; \
   _db_enter_(a, ::strlen(a), __FILE__, __LINE__, &_db_stack_frame_)
+
+#define DBUG_ENTER2 \
+  AutoDebugTrace2 _db_trace_enter(DBUG_PRETTY_FUNCTION, __FILE__, __LINE__, 0)
+#define DBUG_EXIT2 \
+  AutoDebugTrace2 _db_trace_exit(DBUG_PRETTY_FUNCTION, __FILE__, __LINE__, 1)
+
 
 #define DBUG_RETURN(a1)                       \
   do {                                        \

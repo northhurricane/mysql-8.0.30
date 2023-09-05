@@ -717,7 +717,9 @@ THD::THD(bool enable_plugins)
       m_is_plugin_fake_ddl(false),
       m_inside_system_variable_global_update(false),
       bind_parameter_values(nullptr),
-      bind_parameter_values_count(0) {
+      bind_parameter_values_count(0),
+      m_stack_level(0)
+  {
   main_lex->reset();
   set_psi(nullptr);
   mdl_context.init(this);
@@ -1470,6 +1472,8 @@ THD::~THD() {
   }
 
   m_thd_life_cycle_stage = enum_thd_life_cycle_stages::DISPOSED;
+
+  assert(m_stack_level == 0);
 }
 
 /**
