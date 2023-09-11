@@ -143,61 +143,62 @@ class AutoDebugTrace {
 
 class AutoDebugTrace2 {
  public:
-AutoDebugTrace2(const char *function, const char *filename, int line, int type):m_type(type) {
-    // Remove the return type, if it's there.
-    const char *begin = strchr(function, ' ');
-    if (begin != nullptr) {
-      function = begin + 1;
+AutoDebugTrace2(const char *function, const char *filename, int line):m_line(line) {
+    assert(function != nullptr);
+    strcpy(m_function, function);
+    strcpy(m_filename, filename);
+    stack_level_incr();
+    m_stack_level = get_stack_level();
+    if (get_debug_trace_status() == true)
+    {
+      print_func_with_ident(true);
     }
+  }
+
+  void print_func_with_ident(bool construct_func){
+      // Remove the return type, if it's there.
+    
     char outstr[1024] = {0};
     memset(outstr, ' ', 1023);
     char ident[200] = {0};
     int thread_id = get_current_thread_id();
-    if (m_type ==0)
-      stack_level_incr();
-    int stack_level = get_stack_level();
     // type = 0 means enter function
     // type =1 means exit function
     //    sprintf(outstr, "%d    ", thread_id);
-    memset(ident, ' ', stack_level);
-    if (m_type == 0)
-    {
-      sprintf(outstr ,"%d, %s  | > %s    %s:%d\n",thread_id, ident, function , filename, line );
-      }
+    memset(ident, ' ', m_stack_level);
+    if (construct_func == true)
+      sprintf(outstr ,"%d, %s  | > %s    %s:%d\n",thread_id, ident, m_function , m_filename, m_line );  
     else
-    {
-      sprintf(outstr ,"%d, %s  | < %s    %s:%d\n",thread_id, ident, function , filename, line );
-    }
-    // Cut it off at the first parenthesis; the argument list is
-    // often too long to be interesting.
+      sprintf(outstr ,"%d, %s  | < %s    %s:%d\n",thread_id, ident, m_function , m_filename, m_line );
+    fprintf(stderr, "%s",  outstr);
+  }
+  ~AutoDebugTrace2() 
+  { 
+    stack_level_decr();
     if (get_debug_trace_status() == true)
     {
-      fprintf(stderr, "%s",  outstr);
+      print_func_with_ident(false);
     }
   }
-
-  ~AutoDebugTrace2() 
-  { if (m_type == 1)
-      stack_level_decr();
-  }
 private:
-  int m_type;
+  int m_stack_level;
+  char m_function[256];
+  char m_filename[256];
+  int m_line;
 };
 
 #define DBUG_TRACE \
   AutoDebugTrace _db_trace(DBUG_PRETTY_FUNCTION, __FILE__, __LINE__)
+#define DBUG_TRACE2 \
+  AutoDebugTrace2 _db_trace2(DBUG_PRETTY_FUNCTION, __FILE__, __LINE__)
+
+
 
 #endif
 
 #define DBUG_ENTER(a)                       \
   struct _db_stack_frame_ _db_stack_frame_; \
   _db_enter_(a, ::strlen(a), __FILE__, __LINE__, &_db_stack_frame_)
-
-#define DBUG_ENTER2 \
-  AutoDebugTrace2 _db_trace_enter(DBUG_PRETTY_FUNCTION, __FILE__, __LINE__, 0)
-#define DBUG_EXIT2 \
-  AutoDebugTrace2 _db_trace_exit(DBUG_PRETTY_FUNCTION, __FILE__, __LINE__, 1)
-
 
 #define DBUG_RETURN(a1)                       \
   do {                                        \
